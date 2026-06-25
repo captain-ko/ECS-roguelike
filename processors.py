@@ -37,8 +37,7 @@ class MovementSystem(esper.Processor):
                 pos.y = new_y
             
 
-            vel.dx = 0
-            vel.dy = 0    
+            esper.remove_component(ent, Velocity)   
 class RenderSystem(esper.Processor):
     def __init__(self, game_map: GameMap, console: Console, context: tcod.context):
         self.console = console
@@ -95,11 +94,10 @@ class InputSystem(esper.Processor):
                     self.game_state.running = False
                     continue
 
-                player_vel = esper.component_for_entity(self.player, Velocity)
+                #player_vel = esper.component_for_entity(self.player, Velocity)
                 if event.sym in MOVE_KEYS:
                     dx, dy = MOVE_KEYS[event.sym]
-                    player_vel.dx = dx
-                    player_vel.dy = dy
+                    esper.add_component(self.player, Velocity(dx=dx, dy=dy))
 
                 
 

@@ -1,7 +1,7 @@
 import tcod
 import esper
 
-from components import Position, Velocity, Renderable, PlayerInput, GameState
+from components import Position, Velocity, Renderable, PlayerInput, GameState, Creature
 from processors import MovementSystem, RenderSystem, InputSystem
 
 from gamemap import GameMap
@@ -17,9 +17,9 @@ def main() -> None:
    
     player = esper.create_entity(
         Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1]),
-        Velocity(dx=0, dy=0),
         Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0)),
         PlayerInput(),
+        Creature(max_hp=10, current_hp=10, strength=6)
     )
 
     
