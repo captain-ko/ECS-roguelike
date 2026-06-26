@@ -1,8 +1,8 @@
 import tcod
 import esper
 
-from components import Position, Velocity, Renderable, PlayerInput, GameState, Creature
-from processors import MovementSystem, RenderSystem, InputSystem
+from components import Position, Velocity, Renderable, PlayerInput, GameState, CreatureStats
+from processors import MovementSystem, RenderSystem, InputSystem, CombatSystem
 
 from gamemap import GameMap
 import cProfile
@@ -19,9 +19,14 @@ def main() -> None:
         Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1]),
         Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0)),
         PlayerInput(),
-        Creature(max_hp=10, current_hp=10, strength=6)
+        CreatureStats(max_hp=10, current_hp=10, strength=6)
     )
 
+    orc = esper.create_entity(
+        Position(game_map.rooms[1].center[0], game_map.rooms[1].center[1]),
+        Renderable(char="o", color=(106, 191, 80), color_dark=(0,0,0)),
+        CreatureStats(max_hp=60, current_hp=60, strength=5)
+    )
     
 
     game_state_entity = esper.create_entity(
@@ -49,6 +54,7 @@ def main() -> None:
         
 
         esper.add_processor(InputSystem(game_state, player))
+        esper.add_processor(CombatSystem())
         esper.add_processor(MovementSystem(screen_width, screen_height, game_map))
         esper.add_processor(RenderSystem(game_map, console, context))
         

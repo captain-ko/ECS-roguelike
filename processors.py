@@ -1,7 +1,7 @@
 import esper
 import tcod
 from tcod.console import Console
-from components import Position, Velocity, Renderable, GameState, PlayerInput
+from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats
 from gamemap import GameMap, TileType, wall, floor
 import numpy as np
 
@@ -38,6 +38,17 @@ class MovementSystem(esper.Processor):
             
 
             esper.remove_component(ent, Velocity)   
+
+class CombatSystem(esper.Processor):
+    def process(self):
+        for ent, (position, velocity, creature_stats) in esper.get_components(Position, Velocity, CreatureStats):
+            for enemy, (enemy_position, enemy_creature_stats) in esper.get_components(Position, CreatureStats):
+                if position.x + velocity.dx == enemy_position.x and position.y + velocity.dy == enemy_position.y:
+                    enemy_creature_stats.current_hp -= creature_stats.strength
+                    print("Enemy hp = " + str(enemy_creature_stats.current_hp))
+                    esper.remove_component(ent, Velocity)
+        
+
 class RenderSystem(esper.Processor):
     def __init__(self, game_map: GameMap, console: Console, context: tcod.context):
         self.console = console

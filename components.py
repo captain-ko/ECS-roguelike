@@ -26,7 +26,7 @@ class Renderable:
     color_dark: ColorScheme 
 
 @dataclass
-class Creature:
+class CreatureStats:
 
     max_hp: int
     current_hp: int
