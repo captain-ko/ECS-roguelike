@@ -83,8 +83,10 @@ class RenderSystem(esper.Processor):
                 
 
         #PRINT ESPER ENTITIES
+        
         for ent, (pos, rend) in esper.get_components(Position, Renderable):
-            self.console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
+            if self.visible[pos.x, pos.y]:
+                self.console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
 
         self.context.present(self.console)
 
