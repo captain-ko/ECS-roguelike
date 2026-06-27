@@ -1,9 +1,10 @@
 import esper
 import tcod
 from tcod.console import Console
-from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats
+from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats, Target
 from gamemap import GameMap, TileType, wall, floor
 import numpy as np
+from collections import deque
 
 MOVE_KEYS = {
     tcod.event.KeySym.H: (-1, 0),
@@ -81,10 +82,20 @@ class RenderSystem(esper.Processor):
                 if self.explored[x, y] and not self.visible[x, y]:
                     self.console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].dark, bg=self.game_map.tiles[x, y].bg_dark)
                 
+        
+
 
         #PRINT ESPER ENTITIES
         
         for ent, (pos, rend) in esper.get_components(Position, Renderable):
+            if esper.has_component(ent, Target):
+                dijkstra_map = esper.component_for_entity(ent, Target).dijkstra_map
+                for x in range(self.game_map.screen_width):
+                    for y in range(self.game_map.screen_height):
+                        dist = dijkstra_map[x, y]
+                        if dist != float('inf') and self.visible[x,y]:
+                            self.console.print(x, y, text=str(int(dist) % 10), fg = (255,255,255))
+
             if self.visible[pos.x, pos.y]:
                 self.console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
 
@@ -112,7 +123,35 @@ class InputSystem(esper.Processor):
                     dx, dy = MOVE_KEYS[event.sym]
                     esper.add_component(self.player, Velocity(dx=dx, dy=dy))
 
-                
+class PathfindingSystem(esper.Processor):
+    def __init__(self, game_map: GameMap):
+        self.game_map = game_map
+    def process(self):
+        for target, (position, input) in esper.get_components(Position, PlayerInput):
+            
+            x, y = position.x, position.y
+            stack = deque()
+            
+            dijkstra_map = np.full((self.game_map.screen_width, self.game_map.screen_height), fill_value=float('inf'), dtype=float)
+            dijkstra_map[x, y] = 0
+            stack.append((x, y))
+
+            while stack:
+                current_x, current_y = stack.popleft()
+                for dx, dy in ((1,0), (-1,0), (0,1), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1)):
+                    if (0 <= current_x + dx < self.game_map.screen_width) and (0 <= current_y + dy < self.game_map.screen_height) and self.game_map.tiles[current_x + dx, current_y + dy] == floor and dijkstra_map[current_x + dx, current_y + dy] == float('inf'):
+                       dijkstra_map[current_x + dx, current_y + dy] = dijkstra_map[current_x, current_y] + 1
+                       stack.append((current_x + dx, current_y + dy))
+            
+            if esper.has_component(target, Target):
+                component = esper.component_for_entity(target, Target)
+                component.dijkstra_map = dijkstra_map
+            else:
+                esper.add_component(target, Target(dijkstra_map=dijkstra_map))
+
+
+
+
 
 
     

@@ -2,7 +2,7 @@ import tcod
 import esper
 
 from components import Position, Velocity, Renderable, PlayerInput, GameState, CreatureStats
-from processors import MovementSystem, RenderSystem, InputSystem, CombatSystem
+from processors import MovementSystem, RenderSystem, InputSystem, CombatSystem, PathfindingSystem
 
 from gamemap import GameMap
 import cProfile
@@ -52,10 +52,11 @@ def main() -> None:
     ) as context:
         
         
-
+       
         esper.add_processor(InputSystem(game_state, player))
         esper.add_processor(CombatSystem())
         esper.add_processor(MovementSystem(screen_width, screen_height, game_map))
+        esper.add_processor(PathfindingSystem(game_map))
         esper.add_processor(RenderSystem(game_map, console, context))
         
 

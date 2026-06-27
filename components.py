@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+import numpy as np
 
 @dataclass
 class Position:
@@ -44,3 +44,7 @@ class GameState:
 @dataclass
 class BlocksMovement:
     pass
+
+@dataclass
+class Target:
+    dijkstra_map: np.ndarray
