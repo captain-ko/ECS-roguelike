@@ -40,6 +40,7 @@ class PlayerInput:
 @dataclass
 class GameState:
     running: bool
+    turn_passed: bool
 
 @dataclass
 class BlocksMovement:
@@ -48,3 +49,8 @@ class BlocksMovement:
 @dataclass
 class Target:
     dijkstra_map: np.ndarray
+
+@dataclass
+class HasVision:
+    vision_radius: int
+    visible: np.ndarray

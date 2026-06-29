@@ -1,7 +1,7 @@
 import esper
 import tcod
 from tcod.console import Console
-from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats, Target
+from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats, Target, HasVision
 from gamemap import GameMap, TileType, wall, floor
 import numpy as np
 from collections import deque
@@ -44,6 +44,8 @@ class CombatSystem(esper.Processor):
     def process(self):
         for ent, (position, velocity, creature_stats) in esper.get_components(Position, Velocity, CreatureStats):
             for enemy, (enemy_position, enemy_creature_stats) in esper.get_components(Position, CreatureStats):
+                if ent == enemy:
+                    continue
                 if position.x + velocity.dx == enemy_position.x and position.y + velocity.dy == enemy_position.y:
                     enemy_creature_stats.current_hp -= creature_stats.strength
                     print("Enemy hp = " + str(enemy_creature_stats.current_hp))
@@ -88,28 +90,31 @@ class RenderSystem(esper.Processor):
         #PRINT ESPER ENTITIES
         
         for ent, (pos, rend) in esper.get_components(Position, Renderable):
-            if esper.has_component(ent, Target):
-                dijkstra_map = esper.component_for_entity(ent, Target).dijkstra_map
-                for x in range(self.game_map.screen_width):
-                    for y in range(self.game_map.screen_height):
-                        dist = dijkstra_map[x, y]
-                        if dist != float('inf') and self.visible[x,y]:
-                            self.console.print(x, y, text=str(int(dist) % 10), fg = (255,255,255))
+            #THIS LETS YOU SEE THE DIJKSTRA MAP
+            # if esper.has_component(ent, Target):
+            #     dijkstra_map = esper.component_for_entity(ent, Target).dijkstra_map
+            #     for x in range(self.game_map.screen_width):
+            #         for y in range(self.game_map.screen_height):
+            #             dist = dijkstra_map[x, y]
+            #             if dist != float('inf') and self.visible[x,y]:
+            #                 self.console.print(x, y, text=str(int(dist) % 10), fg = (255,255,255))
 
             if self.visible[pos.x, pos.y]:
                 self.console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
 
         self.context.present(self.console)
 
-class InputSystem(esper.Processor):
+class InputSystem():
 
     def __init__(self, game_state: GameState, player):
-       super().__init__()
+      
        self.game_state = game_state
        self.player = player
+       
 
     def process(self):
         for event in tcod.event.wait():
+            self.game_state.turn_passed = False
             if isinstance(event, tcod.event.Quit):
                 self.game_state.running = False
             
@@ -122,6 +127,10 @@ class InputSystem(esper.Processor):
                 if event.sym in MOVE_KEYS:
                     dx, dy = MOVE_KEYS[event.sym]
                     esper.add_component(self.player, Velocity(dx=dx, dy=dy))
+                    self.game_state.turn_passed = True
+                
+                else:
+                    self.game_state.turn_passed = False
 
 class PathfindingSystem(esper.Processor):
     def __init__(self, game_map: GameMap):
@@ -149,6 +158,56 @@ class PathfindingSystem(esper.Processor):
             else:
                 esper.add_component(target, Target(dijkstra_map=dijkstra_map))
 
+class AISystem(esper.Processor):
+    def __init__(self, game_map: GameMap):
+        self.game_map = game_map
+    
+    def process(self):
+        for ent, (position, creature_stats, vision) in esper.get_components(Position, CreatureStats, HasVision):
+            vision = esper.component_for_entity(ent, HasVision)
+            position = esper.component_for_entity(ent, Position)
+            vision.visible = tcod.map.compute_fov(self.game_map.transparency_map, (position.x, position.y), vision.vision_radius, light_walls=True, algorithm=tcod.FOV_BASIC)
+
+            if esper.has_component(ent, Velocity):
+                    continue
+
+            for enemy, (target) in esper.get_components(Position, Target):
+                if ent == enemy:
+                    continue
+                enemy_x = esper.component_for_entity(enemy, Position).x
+                enemy_y = esper.component_for_entity(enemy, Position).y
+
+                
+
+                dijkstra_map =  esper.component_for_entity(enemy, Target).dijkstra_map
+                
+
+                minimum = float('inf')
+                target_tile = (position.x, position.y)
+                movement = (0,0)
+
+                if vision.visible[enemy_x, enemy_y]:
+                    for dx, dy in ((1,0), (-1,0), (0,1), (0,-1), (1,1), (1,-1), (-1,1), (-1,-1)):
+                        if (0 <= position.x + dx < self.game_map.screen_width) and (0 <= position.y + dy < self.game_map.screen_height):
+                            if dijkstra_map[(position.x + dx, position.y + dy)] < minimum:
+                                minimum = dijkstra_map[(position.x + dx, position.y + dy)]
+                                movement = (dx, dy)
+                
+                dx, dy = movement
+
+                #While I considered adding a 0,0 velocity to a non-moving creature, it currently causes issues with the combat system and movement system not removing the velocity, causing new ones to never get added, immobilizing the creature. For now we just avoid adding a (0,0) velocity and will idiot-proof that later
+                if not esper.has_component(ent, Velocity) and movement != (0, 0):
+                    esper.add_component(
+                        ent,
+                        Velocity(
+                            dx, dy
+                        )
+                )
+                        
+                
+                
+
+               
 
 
 

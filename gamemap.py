@@ -81,6 +81,7 @@ class GameMap:
         
         self.tiles = np.full((screen_width, screen_height), fill_value=wall, dtype=object)
         self.rooms: list[RectangularRoom] = []
+        self.transparency_map = np.full((screen_width, screen_height), fill_value=True, dtype=bool)
 
     
     def carve_from(self, start_x: int, start_y: int, visited: np.ndarray, rooms: list[RectangularRoom]):
@@ -326,6 +327,11 @@ class GameMap:
             self.rooms.append(new_room)
 
         self.hallway_gen()
+        
+        for x in range(self.screen_width):
+            for y in range(self.screen_height):
+                if self.tiles[(x, y)] == wall:
+                    self.transparency_map[(x, y)] = False
        
 
             
