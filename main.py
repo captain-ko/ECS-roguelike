@@ -5,22 +5,35 @@ import numpy as np
 from components import Position, Velocity, Renderable, PlayerInput, GameState, CreatureStats, HasVision
 from processors import MovementSystem, RenderSystem, InputSystem, CombatSystem, PathfindingSystem, AISystem
 
+from messagelog import MessageLog, Message
 from gamemap import GameMap
 import cProfile
 
 
 def main() -> None:
-    screen_width, screen_height = 80, 50
-    console = tcod.console.Console(screen_width, screen_height)
-    
-    game_map = GameMap(screen_width=screen_width, screen_height=screen_height)
+
+    screen_width, screen_height = 100, 60
+    map_width, map_height = 80, 50
+    map_console = tcod.console.Console(map_width, map_height)
+    sidebar_console = tcod.console.Console(screen_width - map_width,map_height)
+    log_console = tcod.console.Console(screen_width, screen_height - map_height)
+
+    game_map = GameMap(screen_width=map_width, screen_height=map_height)
     game_map.procgen(100, 7, 15)
+
+    message_log = MessageLog()
+    test_message_1 = Message('This is the first test message')
+    test_message_2 = Message('This is the second test message')
+    test_message_3 = Message('This is the third test message, and should be red', color=(207, 50, 41))
+    message_log.add_message(text=test_message_1.full_text)
+    message_log.add_message(text=test_message_2.full_text)
+    message_log.add_message(text=test_message_3.full_text, color=test_message_3.color)
    
     player = esper.create_entity(
         Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1]),
         Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0)),
         PlayerInput(),
-        CreatureStats(max_hp=10, current_hp=10, strength=6)
+        CreatureStats(max_hp=100, current_hp=100, strength=6)
     )
 
     orc = esper.create_entity(
@@ -31,6 +44,8 @@ def main() -> None:
     )
     
 
+
+#This seems a little bit unnecessary, making an esper object with one referenced component, but I thought it might be more consistent. Maybe improve later.
     game_state_entity = esper.create_entity(
         GameState(
             running=True,
@@ -62,10 +77,10 @@ def main() -> None:
         esper.add_processor(PathfindingSystem(game_map))
         esper.add_processor(AISystem(game_map))
         esper.add_processor(CombatSystem())
-        esper.add_processor(MovementSystem(screen_width, screen_height, game_map))
+        esper.add_processor(MovementSystem(map_width, map_height, game_map))
         
         
-        esper.add_processor(RenderSystem(game_map, console, context))
+        esper.add_processor(RenderSystem(game_map, map_console, sidebar_console, log_console, context, player, message_log))
         
         esper.process()
         

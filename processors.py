@@ -5,6 +5,8 @@ from components import Position, Velocity, Renderable, GameState, PlayerInput, C
 from gamemap import GameMap, TileType, wall, floor
 import numpy as np
 from collections import deque
+from messagelog import Message, MessageLog
+from typing import Tuple
 
 MOVE_KEYS = {
     tcod.event.KeySym.H: (-1, 0),
@@ -53,9 +55,16 @@ class CombatSystem(esper.Processor):
         
 
 class RenderSystem(esper.Processor):
-    def __init__(self, game_map: GameMap, console: Console, context: tcod.context):
-        self.console = console
+    def __init__(self, game_map: GameMap, map_console: Console, sidebar_console: Console, log_console: Console, context: tcod.context, player, message_log: MessageLog):
+        self.map_console = map_console
+        self.sidebar_console = sidebar_console
+        self.log_console = log_console
+        self.root_console = tcod.console.Console(log_console.width, map_console.height + log_console.height)
         self.context = context
+        self.player = player
+        self.message_log = message_log
+
+
         self.game_map = game_map
         self.transparency_map = np.full((game_map.screen_width, game_map.screen_height), True, dtype=bool)
         self.visible = np.full((game_map.screen_width, game_map.screen_height), True, dtype=bool)
@@ -70,19 +79,21 @@ class RenderSystem(esper.Processor):
             self.visible = tcod.map.compute_fov(self.transparency_map, (position.x, position.y), 8, light_walls=True, algorithm=tcod.FOV_BASIC)
 
     def process(self):
-        self.console.clear()
+        self.map_console.clear()
 
         self.compute_fov()
         self.explored |= self.visible
+
+        #This top section prints to the map_console
 
         #PRINT TILES FROM TILEMAP
         for x in range(self.game_map.screen_width):
             for y in range(self.game_map.screen_height):
                 if self.visible[x, y]:
-                    self.console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].light, bg=self.game_map.tiles[x, y].bg)
+                    self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].light, bg=self.game_map.tiles[x, y].bg)
                     continue
                 if self.explored[x, y] and not self.visible[x, y]:
-                    self.console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].dark, bg=self.game_map.tiles[x, y].bg_dark)
+                    self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].dark, bg=self.game_map.tiles[x, y].bg_dark)
                 
         
 
@@ -100,9 +111,33 @@ class RenderSystem(esper.Processor):
             #                 self.console.print(x, y, text=str(int(dist) % 10), fg = (255,255,255))
 
             if self.visible[pos.x, pos.y]:
-                self.console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
+                self.map_console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
 
-        self.context.present(self.console)
+        #Constructing the sidebar
+        max_hp = esper.component_for_entity(self.player, CreatureStats).max_hp
+        current_hp = esper.component_for_entity(self.player, CreatureStats).current_hp
+        strength = esper.component_for_entity(self.player, CreatureStats).strength
+
+        x = 1
+        y = 1
+        self.sidebar_console.print(x, y, "HP", fg=(255,255,255))
+        y += 1
+        healthbar_width = self.sidebar_console.width//2
+        self.sidebar_console.draw_rect(x, y, width=healthbar_width, height=1, bg=(135, 116, 114), ch = ord(' '))
+        self.sidebar_console.draw_rect(x, y, width=int((current_hp/max_hp)*healthbar_width), height=1, bg=(209, 63, 48), ch=ord(' '))
+
+        #Constructing the log console
+        y = 1
+        for message in list(reversed(self.message_log.messages)):
+            self.log_console.print(x=1,y=self.log_console.height - y, text=message.full_text, fg=message.color)
+            y += 1
+
+
+
+        self.map_console.blit(self.root_console, 0, 0)
+        self.sidebar_console.blit(self.root_console, self.map_console.width, 0)
+        self.log_console.blit(self.root_console, 0, self.map_console.height)
+        self.context.present(self.root_console)
 
 class InputSystem():
 
