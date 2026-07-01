@@ -28,6 +28,7 @@ class Renderable:
 @dataclass
 class CreatureStats:
 
+    name: str
     max_hp: int
     current_hp: int
     strength: int

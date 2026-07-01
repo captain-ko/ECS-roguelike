@@ -43,6 +43,8 @@ class MovementSystem(esper.Processor):
             esper.remove_component(ent, Velocity)   
 
 class CombatSystem(esper.Processor):
+    def __init__(self, message_log: MessageLog):
+        self.message_log = message_log
     def process(self):
         for ent, (position, velocity, creature_stats) in esper.get_components(Position, Velocity, CreatureStats):
             for enemy, (enemy_position, enemy_creature_stats) in esper.get_components(Position, CreatureStats):
@@ -50,7 +52,8 @@ class CombatSystem(esper.Processor):
                     continue
                 if position.x + velocity.dx == enemy_position.x and position.y + velocity.dy == enemy_position.y:
                     enemy_creature_stats.current_hp -= creature_stats.strength
-                    print("Enemy hp = " + str(enemy_creature_stats.current_hp))
+                    message = enemy_creature_stats.name + " was hit for " + str(creature_stats.strength) + 'damage.'
+                    self.message_log.add_message(text=message)
                     esper.remove_component(ent, Velocity)
         
 

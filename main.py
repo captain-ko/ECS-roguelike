@@ -22,24 +22,19 @@ def main() -> None:
     game_map.procgen(100, 7, 15)
 
     message_log = MessageLog()
-    test_message_1 = Message('This is the first test message')
-    test_message_2 = Message('This is the second test message')
-    test_message_3 = Message('This is the third test message, and should be red', color=(207, 50, 41))
-    message_log.add_message(text=test_message_1.full_text)
-    message_log.add_message(text=test_message_2.full_text)
-    message_log.add_message(text=test_message_3.full_text, color=test_message_3.color)
+    
    
     player = esper.create_entity(
         Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1]),
         Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0)),
         PlayerInput(),
-        CreatureStats(max_hp=100, current_hp=100, strength=6)
+        CreatureStats(name='player', max_hp=100, current_hp=100, strength=6)
     )
 
     orc = esper.create_entity(
         Position(game_map.rooms[1].center[0], game_map.rooms[1].center[1]),
         Renderable(char="o", color=(106, 191, 80), color_dark=(0,0,0)),
-        CreatureStats(max_hp=60, current_hp=60, strength=5),
+        CreatureStats(name='orc', max_hp=60, current_hp=60, strength=5),
         HasVision(4, np.zeros((game_map.screen_width, game_map.screen_height)))
     )
     
@@ -76,7 +71,7 @@ def main() -> None:
         
         esper.add_processor(PathfindingSystem(game_map))
         esper.add_processor(AISystem(game_map))
-        esper.add_processor(CombatSystem())
+        esper.add_processor(CombatSystem(message_log))
         esper.add_processor(MovementSystem(map_width, map_height, game_map))
         
         
