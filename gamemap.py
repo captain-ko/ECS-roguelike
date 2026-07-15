@@ -19,8 +19,8 @@ class TileType:
     bg_dark: tuple[int, int, int]
     walkable: bool
 
-wall = TileType(char=" ", light=(255,255,255), dark=(5,26,166), bg=(64,49,141), bg_dark=(78, 74, 99), walkable=False)
-floor = TileType(char=" ", light=(185, 28, 199), dark=(185, 28, 199), bg=(120,105,196), bg_dark=(146, 139, 179), walkable=True)
+wall = TileType(char="^", light=(255,255,255), dark=(33, 71, 10), bg=(33, 71, 10), bg_dark=(78, 74, 99), walkable=False)
+floor = TileType(char=" ", light=(185, 28, 199), dark=(185, 28, 199), bg=(134, 201, 93), bg_dark=(146, 139, 179), walkable=True)
 
 class RectangularRoom:
     def __init__(self, x, y, width, height):

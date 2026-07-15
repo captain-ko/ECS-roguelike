@@ -31,10 +31,10 @@ def main() -> None:
         CreatureStats(name='player', max_hp=100, current_hp=100, strength=6)
     )
 
-    orc = esper.create_entity(
+    wolf = esper.create_entity(
         Position(game_map.rooms[1].center[0], game_map.rooms[1].center[1]),
-        Renderable(char="o", color=(106, 191, 80), color_dark=(0,0,0)),
-        CreatureStats(name='orc', max_hp=60, current_hp=60, strength=5),
+        Renderable(char="w", color=(92, 73, 47), color_dark=(0,0,0)),
+        CreatureStats(name='wolf', max_hp=60, current_hp=60, strength=5),
         HasVision(4, np.zeros((game_map.screen_width, game_map.screen_height)))
     )
     
@@ -69,20 +69,35 @@ def main() -> None:
         input_system = InputSystem(game_state=game_state, player=player)
        
         
-        esper.add_processor(PathfindingSystem(game_map))
-        esper.add_processor(AISystem(game_map))
-        esper.add_processor(CombatSystem(message_log))
-        esper.add_processor(MovementSystem(map_width, map_height, game_map))
+        pathfinding_system = PathfindingSystem(game_map)
+        esper.add_processor(pathfinding_system)
+        ai_system = AISystem(game_map)
+        esper.add_processor(ai_system)
+        combat_system = CombatSystem(message_log)
+        esper.add_processor(combat_system)
+        movement_system = MovementSystem(map_width, map_height, game_map)
+        esper.add_processor(movement_system)
         
         
-        esper.add_processor(RenderSystem(game_map, map_console, sidebar_console, log_console, context, player, message_log))
+        render_system = RenderSystem(game_map, map_console, sidebar_console, log_console, context, player, message_log)
+        esper.add_processor(render_system)
         
         esper.process()
         
         while game_state.running:
             input_system.process()
             if game_state.turn_passed:
-                esper.process()
+                #TEMPORARY BANDAID FIX
+                #Instead of running esper.process every turn, we call the combat and movement systems twice so that the player moves before the enemies. Maybe in the future change this so there is a unique process for player movement and enemy movement? 
+                #Without this fix, the enemy gets "attacks of opportunity" and can hit the player as they're moving away.
+                combat_system.process()
+                movement_system.process()
+                pathfinding_system.process()
+                ai_system.process()
+                combat_system.process()
+                movement_system.process()
+                render_system.process()
+
                 
             
 

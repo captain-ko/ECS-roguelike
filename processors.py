@@ -79,7 +79,7 @@ class RenderSystem(esper.Processor):
 
     def compute_fov(self):
         for ent, (position, player_input) in esper.get_components(Position, PlayerInput):
-            self.visible = tcod.map.compute_fov(self.transparency_map, (position.x, position.y), 8, light_walls=True, algorithm=tcod.FOV_BASIC)
+            self.visible = tcod.map.compute_fov(self.transparency_map, (position.x, position.y), 40, light_walls=True, algorithm=tcod.FOV_BASIC)
 
     def process(self):
         self.map_console.clear()
@@ -130,10 +130,12 @@ class RenderSystem(esper.Processor):
         self.sidebar_console.draw_rect(x, y, width=int((current_hp/max_hp)*healthbar_width), height=1, bg=(209, 63, 48), ch=ord(' '))
 
         #Constructing the log console
+        self.log_console.clear()
         y = 1
         for message in list(reversed(self.message_log.messages)):
             self.log_console.print(x=1,y=self.log_console.height - y, text=message.full_text, fg=message.color)
             y += 1
+            
 
 
 
