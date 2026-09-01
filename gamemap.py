@@ -82,6 +82,7 @@ class GameMap:
         self.tiles = np.full((screen_width, screen_height), fill_value=wall, dtype=object)
         self.rooms: list[RectangularRoom] = []
         self.transparency_map = np.full((screen_width, screen_height), fill_value=True, dtype=bool)
+        self.current_floor = 0
 
     
     def carve_from(self, start_x: int, start_y: int, visited: np.ndarray, rooms: list[RectangularRoom]):
@@ -125,59 +126,6 @@ class GameMap:
             visited[nx, ny] = True
 
             stack.append((nx, ny))
-
-
-    #Deprecated
-    def mazegen(self, rooms: list[RectangularRoom]):
-
-        visited = np.zeros((self.screen_width, self.screen_height), dtype=bool)
-
-        for x in range(1, self.tiles.shape[0] - 1, 2):
-            for y in range(1, self.tiles.shape[1] - 1, 2):
-                overlap = False
-
-                for room in rooms:
-                    if room.x1 <= x <= room.x2 and room.y1 <= y <= room.y2:
-                        overlap = True
-                        break
-                
-                if overlap:
-                    continue
-
-                if visited[x, y]:
-                    continue
-
-                self.carve_from(x, y, visited, rooms)
-
-    def is_dead_end(self, position: tuple[int, int]) -> bool:
-        x, y = position
-        surrounding_walls = 0
-        for dx, dy in [(1,0), (0,1), (-1, 0), (0, -1)]:
-            if not (0 <= x + dx < self.screen_width) or not (0 <= y + dy < self.screen_height):
-                continue
-            if self.tiles[x + dx, y + dy] == wall:
-                surrounding_walls += 1
-        
-        if surrounding_walls == 3:
-            return True
-        else:
-            return False
-        
-    def remove_dead_ends(self):
-        dead_ends = []
-        for position, tile in np.ndenumerate(self.tiles):
-            if self.is_dead_end(position):
-                dead_ends.append(position)
-            
-        while dead_ends:
-            x, y = dead_ends.pop()
-            if self.tiles[(x, y)] == wall:
-                continue
-            self.tiles[(x, y)] = wall
-            for dx, dy in [(1,0), (0,1), (-1, 0), (0, -1)]:
-                nx, ny = x + dx, y + dy
-                if self.is_dead_end((nx, ny)):
-                    dead_ends.append((nx, ny))
 
     def tunnel_between(self, start: tuple[int, int], end: tuple[int, int]):
         x1, y1 = start
