@@ -80,6 +80,7 @@ class Level:
     depth: int
     tilemap: np.array
     transparency_map: np.array
+    explored_map: np.array
     rooms: list[RectangularRoom]
 
 class GameMap:
@@ -90,6 +91,7 @@ class GameMap:
         self.tiles = np.full((screen_width, screen_height), fill_value=wall, dtype=object)
         self.rooms: list[RectangularRoom] = []
         self.transparency_map = np.full((screen_width, screen_height), fill_value=True, dtype=bool)
+        self.explored = np.zeros((screen_width, screen_height), dtype=bool)
         self.current_floor = 0
         self.levels: dict[int, Level] = {}
 
@@ -274,19 +276,26 @@ class GameMap:
                 if self.tiles[(x, y)] == wall:
                     self.transparency_map[(x, y)] = False
 
-        self.levels[self.current_floor] = Level(self.current_floor, self.tiles, self.transparency_map, self.rooms)
+        
 
     def floor_change(self, z_move):
+
+
+        self.levels[self.current_floor] = Level(self.current_floor, self.tiles, self.transparency_map, self.explored, self.rooms)
+
         self.tiles = np.full((self.screen_width, self.screen_height), fill_value=wall, dtype=object)
         self.rooms: list[RectangularRoom] = []
         self.transparency_map = np.full((self.screen_width, self.screen_height), fill_value=True, dtype=bool)
         self.current_floor = self.current_floor + z_move
+        self.explored = np.zeros((self.screen_width, self.screen_height), dtype=bool)
+        
 
 
         if self.current_floor in self.levels:
                 self.tiles: np.array = self.levels[self.current_floor].tilemap
                 self.transparency_map: np.array = self.levels[self.current_floor].transparency_map
                 self.rooms: list[RectangularRoom] = self.levels[self.current_floor].rooms
+                self.explored: np.array = self.levels[self.current_floor].explored_map
         else: self.procgen(100,7,15)
         
     

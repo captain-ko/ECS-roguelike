@@ -85,7 +85,7 @@ class RenderSystem(esper.Processor):
         self.map_console.clear()
 
         self.compute_fov()
-        self.explored |= self.visible
+        self.game_map.explored |= self.visible
 
         #This top section prints to the map_console
 
@@ -95,7 +95,7 @@ class RenderSystem(esper.Processor):
                 if self.visible[x, y]:
                     self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].light, bg=self.game_map.tiles[x, y].bg)
                     continue
-                if self.explored[x, y] and not self.visible[x, y]:
+                if self.game_map.explored[x, y] and not self.visible[x, y]:
                     self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].dark, bg=self.game_map.tiles[x, y].bg_dark)
                 
         
@@ -174,9 +174,11 @@ class InputSystem():
                 
                 elif event.sym == tcod.event.KeySym.PERIOD and shift:
                     self.game_map.floor_change(1)
+                    self.game_state.turn_passed = True
 
                 elif event.sym == tcod.event.KeySym.COMMA and shift:
                     self.game_map.floor_change(-1)
+                    self.game_state.turn_passed = True
 
                 else:
                     self.game_state.turn_passed = False
