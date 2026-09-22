@@ -81,6 +81,7 @@ class Level:
     tilemap: np.array
     transparency_map: np.array
     explored_map: np.array
+    color_shift_map: np.array
     rooms: list[RectangularRoom]
 
 class GameMap:
@@ -94,6 +95,8 @@ class GameMap:
         self.explored = np.zeros((screen_width, screen_height), dtype=bool)
         self.current_floor = 0
         self.levels: dict[int, Level] = {}
+
+        self.color_shift_map = np.zeros((screen_width,screen_height, 3), dtype=np.uint8)
 
     
     def carve_from(self, start_x: int, start_y: int, visited: np.ndarray, rooms: list[RectangularRoom]):
@@ -276,18 +279,24 @@ class GameMap:
                 if self.tiles[(x, y)] == wall:
                     self.transparency_map[(x, y)] = False
 
+                self.color_shift_map[x,y] = (np.random.randint(0,50),np.random.randint(0,50),np.random.randint(0,50))
+           
+
+        
+
         
 
     def floor_change(self, z_move):
 
 
-        self.levels[self.current_floor] = Level(self.current_floor, self.tiles, self.transparency_map, self.explored, self.rooms)
+        self.levels[self.current_floor] = Level(self.current_floor, self.tiles, self.transparency_map, self.explored,self.color_shift_map, self.rooms)
 
         self.tiles = np.full((self.screen_width, self.screen_height), fill_value=wall, dtype=object)
         self.rooms: list[RectangularRoom] = []
         self.transparency_map = np.full((self.screen_width, self.screen_height), fill_value=True, dtype=bool)
         self.current_floor = self.current_floor + z_move
         self.explored = np.zeros((self.screen_width, self.screen_height), dtype=bool)
+        self.color_shift_map = np.zeros((self.screen_width,self.screen_height, 3), dtype=np.uint8)
         
 
 
@@ -296,6 +305,9 @@ class GameMap:
                 self.transparency_map: np.array = self.levels[self.current_floor].transparency_map
                 self.rooms: list[RectangularRoom] = self.levels[self.current_floor].rooms
                 self.explored: np.array = self.levels[self.current_floor].explored_map
+                self.color_shift_map: np.array = self.levels[self.current_floor].color_shift_map
+
+
         else: self.procgen(100,7,15)
         
     

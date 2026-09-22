@@ -90,10 +90,13 @@ class RenderSystem(esper.Processor):
         #This top section prints to the map_console
 
         #PRINT TILES FROM TILEMAP
+
         for x in range(self.game_map.screen_width):
             for y in range(self.game_map.screen_height):
+                background = tuple(np.add(self.game_map.color_shift_map[x,y], self.game_map.tiles[x,y].bg))
+                #background = np.add(self.game_map.tiles[x,y].bg, tuple((self.game_map.color_shift_map[x,y][0], self.game_map.color_shift_map[x,y][1],self.game_map.color_shift_map[x,y][2])))
                 if self.visible[x, y]:
-                    self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].light, bg=self.game_map.tiles[x, y].bg)
+                    self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].light, bg=background)
                     continue
                 if self.game_map.explored[x, y] and not self.visible[x, y]:
                     self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].dark, bg=self.game_map.tiles[x, y].bg_dark)
