@@ -22,6 +22,8 @@ class TileType:
 wall = TileType(char="^", light=(255,255,255), dark=(33, 71, 10), bg=(33, 71, 10), bg_dark=(78, 74, 99), walkable=False)
 floor = TileType(char=" ", light=(185, 28, 199), dark=(185, 28, 199), bg=(134, 201, 93), bg_dark=(146, 139, 179), walkable=True)
 
+
+
 class RectangularRoom:
     def __init__(self, x, y, width, height):
         self.x1 = x
@@ -73,6 +75,12 @@ class RectangularRoom:
 
             
 
+@dataclass
+class Level:
+    depth: int
+    tilemap: np.array
+    transparency_map: np.array
+    rooms: list[RectangularRoom]
 
 class GameMap:
     def __init__(self, screen_width, screen_height):
@@ -83,6 +91,7 @@ class GameMap:
         self.rooms: list[RectangularRoom] = []
         self.transparency_map = np.full((screen_width, screen_height), fill_value=True, dtype=bool)
         self.current_floor = 0
+        self.levels: dict[int, Level] = {}
 
     
     def carve_from(self, start_x: int, start_y: int, visited: np.ndarray, rooms: list[RectangularRoom]):
@@ -194,16 +203,6 @@ class GameMap:
             )
 
 
-        
-    
-        
-
-        
-        
-
-
-
-
     def floodcheck(self):
         visited = np.full(self.tiles.shape, False, dtype=bool)
         regions = []
@@ -237,13 +236,7 @@ class GameMap:
         
         return regions
 
-
-
-
-
     def procgen(self, room_tries: int, min_room_size: int, max_room_size: int):
-        
-        
         for i in range(room_tries):
             overlap = False
 
@@ -280,9 +273,21 @@ class GameMap:
             for y in range(self.screen_height):
                 if self.tiles[(x, y)] == wall:
                     self.transparency_map[(x, y)] = False
-       
 
-            
+        self.levels[self.current_floor] = Level(self.current_floor, self.tiles, self.transparency_map, self.rooms)
+
+    def floor_change(self, z_move):
+        self.tiles = np.full((self.screen_width, self.screen_height), fill_value=wall, dtype=object)
+        self.rooms: list[RectangularRoom] = []
+        self.transparency_map = np.full((self.screen_width, self.screen_height), fill_value=True, dtype=bool)
+        self.current_floor = self.current_floor + z_move
+
+
+        if self.current_floor in self.levels:
+                self.tiles: np.array = self.levels[self.current_floor].tilemap
+                self.transparency_map: np.array = self.levels[self.current_floor].transparency_map
+                self.rooms: list[RectangularRoom] = self.levels[self.current_floor].rooms
+        else: self.procgen(100,7,15)
         
     
 

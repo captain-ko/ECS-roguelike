@@ -79,7 +79,7 @@ class RenderSystem(esper.Processor):
 
     def compute_fov(self):
         for ent, (position, player_input) in esper.get_components(Position, PlayerInput):
-            self.visible = tcod.map.compute_fov(self.transparency_map, (position.x, position.y), 40, light_walls=True, algorithm=tcod.FOV_BASIC)
+            self.visible = tcod.map.compute_fov(self.game_map.transparency_map, (position.x, position.y), 40, light_walls=True, algorithm=tcod.FOV_BASIC)
 
     def process(self):
         self.map_console.clear()
@@ -146,11 +146,11 @@ class RenderSystem(esper.Processor):
 
 class InputSystem():
 
-    def __init__(self, game_state: GameState, player):
+    def __init__(self, game_state: GameState, player, game_map: GameMap):
       
        self.game_state = game_state
        self.player = player
-       
+       self.game_map = game_map
 
     def process(self):
         for event in tcod.event.wait():
@@ -159,6 +159,9 @@ class InputSystem():
                 self.game_state.running = False
             
             elif isinstance(event, tcod.event.KeyDown):
+
+                shift = event.mod & tcod.event.Modifier.SHIFT
+
                 if event.sym == tcod.event.KeySym.ESCAPE:
                     self.game_state.running = False
                     continue
@@ -169,6 +172,12 @@ class InputSystem():
                     esper.add_component(self.player, Velocity(dx=dx, dy=dy))
                     self.game_state.turn_passed = True
                 
+                elif event.sym == tcod.event.KeySym.PERIOD and shift:
+                    self.game_map.floor_change(1)
+
+                elif event.sym == tcod.event.KeySym.COMMA and shift:
+                    self.game_map.floor_change(-1)
+
                 else:
                     self.game_state.turn_passed = False
 

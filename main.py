@@ -66,7 +66,7 @@ def main() -> None:
         
         
        
-        input_system = InputSystem(game_state=game_state, player=player)
+        input_system = InputSystem(game_state=game_state, player=player, game_map=game_map)
        
         
         pathfinding_system = PathfindingSystem(game_map)
