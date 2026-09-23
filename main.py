@@ -25,14 +25,14 @@ def main() -> None:
     
    
     player = esper.create_entity(
-        Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1]),
+        Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1], 1),
         Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0)),
         PlayerInput(),
         CreatureStats(name='player', max_hp=100, current_hp=100, strength=6)
     )
 
     wolf = esper.create_entity(
-        Position(game_map.rooms[1].center[0], game_map.rooms[1].center[1]),
+        Position(game_map.rooms[1].center[0], game_map.rooms[1].center[1], 1),
         Renderable(char="w", color=(92, 73, 47), color_dark=(0,0,0)),
         CreatureStats(name='wolf', max_hp=60, current_hp=60, strength=5),
         HasVision(4, np.zeros((game_map.screen_width, game_map.screen_height)))
@@ -98,7 +98,7 @@ def main() -> None:
                 movement_system.process()
                 render_system.process()
 
-               
+                print(game_map.color_shift_map)
 
                 
             

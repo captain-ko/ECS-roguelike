@@ -20,7 +20,7 @@ class TileType:
     walkable: bool
 
 wall = TileType(char="^", light=(255,255,255), dark=(33, 71, 10), bg=(33, 71, 10), bg_dark=(78, 74, 99), walkable=False)
-floor = TileType(char=" ", light=(185, 28, 199), dark=(185, 28, 199), bg=(134, 201, 93), bg_dark=(146, 139, 179), walkable=True)
+floor = TileType(char=" ", light=(185, 28, 199), dark=(185, 28, 199), bg=(70, 133, 53), bg_dark=(146, 139, 179), walkable=True)
 
 
 
@@ -279,7 +279,7 @@ class GameMap:
                 if self.tiles[(x, y)] == wall:
                     self.transparency_map[(x, y)] = False
 
-                self.color_shift_map[x,y] = (np.random.randint(0,50),np.random.randint(0,50),np.random.randint(0,50))
+                self.color_shift_map[x,y] = (np.random.randint(0,60),np.random.randint(0,60),np.random.randint(0,60))
            
 
         

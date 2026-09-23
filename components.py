@@ -6,6 +6,7 @@ class Position:
     
     x: int
     y: int
+    z: int
 
 
 @dataclass

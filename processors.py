@@ -94,7 +94,8 @@ class RenderSystem(esper.Processor):
         for x in range(self.game_map.screen_width):
             for y in range(self.game_map.screen_height):
                 background = tuple(np.add(self.game_map.color_shift_map[x,y], self.game_map.tiles[x,y].bg))
-                #background = np.add(self.game_map.tiles[x,y].bg, tuple((self.game_map.color_shift_map[x,y][0], self.game_map.color_shift_map[x,y][1],self.game_map.color_shift_map[x,y][2])))
+                background = min(255, background[0]), min(255, background[1]), min(255, background[2])
+
                 if self.visible[x, y]:
                     self.map_console.print(x=x, y=y, text=self.game_map.tiles[x, y].char,fg=self.game_map.tiles[x, y].light, bg=background)
                     continue
@@ -120,6 +121,8 @@ class RenderSystem(esper.Processor):
                 self.map_console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
 
         #Constructing the sidebar
+        self.sidebar_console.clear()
+
         max_hp = esper.component_for_entity(self.player, CreatureStats).max_hp
         current_hp = esper.component_for_entity(self.player, CreatureStats).current_hp
         strength = esper.component_for_entity(self.player, CreatureStats).strength
@@ -131,6 +134,10 @@ class RenderSystem(esper.Processor):
         healthbar_width = self.sidebar_console.width//2
         self.sidebar_console.draw_rect(x, y, width=healthbar_width, height=1, bg=(135, 116, 114), ch = ord(' '))
         self.sidebar_console.draw_rect(x, y, width=int((current_hp/max_hp)*healthbar_width), height=1, bg=(209, 63, 48), ch=ord(' '))
+
+        #Adding player coordinates
+        y += 1
+        self.sidebar_console.print(x, y, "Depth: " + str(esper.component_for_entity(self.player, Position).z))
 
         #Constructing the log console
         self.log_console.clear()
@@ -177,10 +184,12 @@ class InputSystem():
                 
                 elif event.sym == tcod.event.KeySym.PERIOD and shift:
                     self.game_map.floor_change(1)
+                    esper.component_for_entity(self.player, Position).z += 1
                     self.game_state.turn_passed = True
 
                 elif event.sym == tcod.event.KeySym.COMMA and shift:
                     self.game_map.floor_change(-1)
+                    esper.component_for_entity(self.player, Position).z -= 1
                     self.game_state.turn_passed = True
 
                 else:
