@@ -29,6 +29,8 @@ class MovementSystem(esper.Processor):
         self.game_map = game_map
     def process(self):
         for ent, (pos, vel) in esper.get_components(Position, Velocity):
+            if pos.z != self.game_map.current_floor:
+                continue
             if vel.dx == 0 and vel.dy == 0:
                 continue  
 
@@ -43,11 +45,18 @@ class MovementSystem(esper.Processor):
             esper.remove_component(ent, Velocity)   
 
 class CombatSystem(esper.Processor):
-    def __init__(self, message_log: MessageLog):
+    def __init__(self, message_log: MessageLog, game_map: GameMap):
         self.message_log = message_log
+        self.game_map = game_map
     def process(self):
         for ent, (position, velocity, creature_stats) in esper.get_components(Position, Velocity, CreatureStats):
+
+            if position.z != self.game_map.current_floor:
+                continue
+
             for enemy, (enemy_position, enemy_creature_stats) in esper.get_components(Position, CreatureStats):
+                if enemy_position.z != self.game_map.current_floor:
+                    continue
                 if ent == enemy:
                     continue
                 if position.x + velocity.dx == enemy_position.x and position.y + velocity.dy == enemy_position.y:
@@ -200,7 +209,10 @@ class PathfindingSystem(esper.Processor):
         self.game_map = game_map
     def process(self):
         for target, (position, input) in esper.get_components(Position, PlayerInput):
-            
+
+            if position.z != self.game_map.current_floor:
+                continue
+
             x, y = position.x, position.y
             stack = deque()
             
@@ -229,7 +241,12 @@ class AISystem(esper.Processor):
         for ent, (position, creature_stats, vision) in esper.get_components(Position, CreatureStats, HasVision):
             vision = esper.component_for_entity(ent, HasVision)
             position = esper.component_for_entity(ent, Position)
-            vision.visible = tcod.map.compute_fov(self.game_map.transparency_map, (position.x, position.y), vision.vision_radius, light_walls=True, algorithm=tcod.FOV_BASIC)
+            if position.z != self.game_map.current_floor:
+                continue
+            vision.visible = tcod.map.compute_fov(self.game_map.transparency_map, (position.x, position.y), vision.
+            vision_radius, light_walls=True, algorithm=tcod.FOV_BASIC)
+
+            
 
             if esper.has_component(ent, Velocity):
                     continue

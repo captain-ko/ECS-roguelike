@@ -73,7 +73,7 @@ def main() -> None:
         esper.add_processor(pathfinding_system)
         ai_system = AISystem(game_map)
         esper.add_processor(ai_system)
-        combat_system = CombatSystem(message_log)
+        combat_system = CombatSystem(message_log, game_map=game_map)
         esper.add_processor(combat_system)
         movement_system = MovementSystem(map_width, map_height, game_map)
         esper.add_processor(movement_system)
