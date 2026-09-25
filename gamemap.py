@@ -93,7 +93,7 @@ class GameMap:
         self.rooms: list[RectangularRoom] = []
         self.transparency_map = np.full((screen_width, screen_height), fill_value=True, dtype=bool)
         self.explored = np.zeros((screen_width, screen_height), dtype=bool)
-        self.current_floor = 0
+        self.current_floor = 1
         self.levels: dict[int, Level] = {}
 
         self.color_shift_map = np.zeros((screen_width,screen_height, 3), dtype=np.uint8)

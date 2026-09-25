@@ -117,7 +117,7 @@ class RenderSystem(esper.Processor):
             #             if dist != float('inf') and self.visible[x,y]:
             #                 self.console.print(x, y, text=str(int(dist) % 10), fg = (255,255,255))
 
-            if self.visible[pos.x, pos.y]:
+            if self.visible[pos.x, pos.y] and pos.z == self.game_map.current_floor:
                 self.map_console.print(x=pos.x, y=pos.y, text=rend.char, fg=rend.color)
 
         #Constructing the sidebar
