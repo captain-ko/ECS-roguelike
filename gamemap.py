@@ -283,7 +283,10 @@ class GameMap:
                 self.color_shift_map[x,y] = (np.random.randint(0,60),np.random.randint(0,60),np.random.randint(0,60))
 
         for room in self.rooms:
-            x, y = room.center
+            if random.random() < .7:
+                continue
+            x = randint(room.x1 + 1, room.x2 - 1)
+            y = randint(room.y1 + 1, room.y2 - 1)
             z = self.current_floor
             item_system.spawn(item_name='sword', x=x, y=y, z=z)
            
