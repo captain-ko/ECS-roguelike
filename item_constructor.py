@@ -1,15 +1,22 @@
 import esper
 from components import Item, Position, WeaponStats, ArmorStats, Renderable
 import json
+import random
 
 class ItemSystem():
     def __init__(self):
         with open('items.json', encoding = 'utf-8') as file:
                     self.items = json.load(file)
-        
+        self.common_items = []
+        for item in self.items:
+             self.common_items.append(item['name'])
+             
         
 
-
+    def random_spawn(self, rarity, x, y, z):
+         match rarity:
+              case 'common':
+                   self.spawn(item_name=random.choice(self.common_items), x=x, y=y, z=z)
     
     def spawn(self, item_name, x, y, z):
         blueprint = next((item for item in self.items if item['name'] == item_name), None)
@@ -26,4 +33,4 @@ class ItemSystem():
                     esper.add_component(new_item, WeaponStats(strength_bonus=blueprint['power']))
 
                 case 'armor':
-                    esper.add_component(new_item, ArmorStats(armor_rating=blueprint['armor_rating']))
+                    esper.add_component(new_item, ArmorStats(armor_rating=blueprint['armor rating']))

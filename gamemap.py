@@ -8,6 +8,7 @@ from scipy.spatial import Delaunay
 from scipy.sparse.csgraph import minimum_spanning_tree
 import tcod
 from item_constructor import ItemSystem
+import json
 
 item_system = ItemSystem()
 
@@ -98,6 +99,7 @@ class GameMap:
         self.levels: dict[int, Level] = {}
 
         self.color_shift_map = np.zeros((screen_width,screen_height, 3), dtype=np.uint8)
+
 
     
     def carve_from(self, start_x: int, start_y: int, visited: np.ndarray, rooms: list[RectangularRoom]):
@@ -288,7 +290,8 @@ class GameMap:
             x = randint(room.x1 + 1, room.x2 - 1)
             y = randint(room.y1 + 1, room.y2 - 1)
             z = self.current_floor
-            item_system.spawn(item_name='sword', x=x, y=y, z=z)
+
+            item_system.random_spawn(rarity='common', x=x, y=y, z=z)
            
 
         
