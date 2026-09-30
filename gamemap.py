@@ -7,8 +7,9 @@ import random
 from scipy.spatial import Delaunay
 from scipy.sparse.csgraph import minimum_spanning_tree
 import tcod
+from item_constructor import ItemSystem
 
-
+item_system = ItemSystem()
 
 @dataclass
 class TileType:
@@ -280,6 +281,11 @@ class GameMap:
                     self.transparency_map[(x, y)] = False
 
                 self.color_shift_map[x,y] = (np.random.randint(0,60),np.random.randint(0,60),np.random.randint(0,60))
+
+        for room in self.rooms:
+            x, y = room.center
+            z = self.current_floor
+            item_system.spawn(item_name='sword', x=x, y=y, z=z)
            
 
         

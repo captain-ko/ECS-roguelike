@@ -1,0 +1,17 @@
+[
+    {
+        "name": "sword",
+        "char": ")",
+        "type": "weapon",
+        "power": 3,
+        "value": 10
+    },
+
+    {
+        "name": "shield",
+        "char": "]",
+        "type": "armor",
+        "armor rating": 5,
+        "value": 15
+    }
+]

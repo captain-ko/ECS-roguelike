@@ -1,12 +1,15 @@
 import esper
 import tcod
 from tcod.console import Console
-from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats, Target, HasVision
+from components import Position, Velocity, Renderable, GameState, PlayerInput, CreatureStats, Target, HasVision, Item, WeaponStats, ArmorStats
 from gamemap import GameMap, TileType, wall, floor
 import numpy as np
 from collections import deque
 from messagelog import Message, MessageLog
 from typing import Tuple
+import json
+
+
 
 MOVE_KEYS = {
     tcod.event.KeySym.H: (-1, 0),
@@ -116,7 +119,9 @@ class RenderSystem(esper.Processor):
 
         #PRINT ESPER ENTITIES
         
-        for ent, (pos, rend) in esper.get_components(Position, Renderable):
+        sorted_entities = sorted(esper.get_components(Position, Renderable), key=lambda item: item[1][1].render_priority)
+
+        for ent, (pos, rend) in sorted_entities:
             #THIS LETS YOU SEE THE DIJKSTRA MAP
             # if esper.has_component(ent, Target):
             #     dijkstra_map = esper.component_for_entity(ent, Target).dijkstra_map
@@ -284,13 +289,3 @@ class AISystem(esper.Processor):
                         )
                 )
                         
-                
-                
-
-               
-
-
-
-
-
-    

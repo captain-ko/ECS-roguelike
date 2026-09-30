@@ -1,5 +1,27 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import numpy as np
+
+
+@dataclass
+class Inventory:
+    max_carry_weight: int
+    bag: dict[int, int] = field(default_factory = dict)
+
+@dataclass
+class Item:
+    name: str
+    item_type: str
+    value: int
+    
+
+@dataclass
+class WeaponStats:
+    strength_bonus: int
+    
+@dataclass
+class ArmorStats:
+    armor_rating: int
+
 
 @dataclass
 class Position:
@@ -24,7 +46,8 @@ class Renderable:
    
     char: str
     color: ColorScheme 
-    color_dark: ColorScheme 
+    color_dark: ColorScheme
+    render_priority: int = 0
 
 @dataclass
 class CreatureStats:

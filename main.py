@@ -26,7 +26,7 @@ def main() -> None:
    
     player = esper.create_entity(
         Position(game_map.rooms[0].center[0], game_map.rooms[0].center[1], 1),
-        Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0)),
+        Renderable(char="@", color=(255, 255, 255), color_dark= (0,0,0), render_priority=2),
         PlayerInput(),
         CreatureStats(name='player', max_hp=100, current_hp=100, strength=6)
     )
