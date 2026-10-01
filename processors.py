@@ -52,8 +52,10 @@ class CombatSystem(esper.Processor):
         self.message_log = message_log
         self.game_map = game_map
     def process(self):
-        for ent, (position, velocity, creature_stats) in esper.get_components(Position, Velocity, CreatureStats):
 
+        entities_to_delete = []
+        for ent, (position, velocity, creature_stats) in esper.get_components(Position, Velocity, CreatureStats):
+            
             if position.z != self.game_map.current_floor:
                 continue
 
@@ -67,6 +69,13 @@ class CombatSystem(esper.Processor):
                     message = enemy_creature_stats.name + " was hit for " + str(creature_stats.strength) + 'damage.'
                     self.message_log.add_message(text=message)
                     esper.remove_component(ent, Velocity)
+
+
+                #Currently no fail state for player, this will need to be handled separately.
+                if enemy_creature_stats.current_hp <= 0 and not esper.has_component(enemy, PlayerInput):
+                    entities_to_delete.append(enemy)
+        for entity in entities_to_delete:
+            esper.delete_entity(entity=entity, immediate=True)
         
 
 class RenderSystem(esper.Processor):
