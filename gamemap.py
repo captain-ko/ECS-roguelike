@@ -7,10 +7,10 @@ import random
 from scipy.spatial import Delaunay
 from scipy.sparse.csgraph import minimum_spanning_tree
 import tcod
-from item_constructor import ItemSystem
+from entity_spawner import Spawner
 import json
 
-item_system = ItemSystem()
+spawner = Spawner()
 
 @dataclass
 class TileType:
@@ -291,7 +291,7 @@ class GameMap:
             y = randint(room.y1 + 1, room.y2 - 1)
             z = self.current_floor
 
-            item_system.random_spawn(rarity='common', x=x, y=y, z=z)
+            spawner.random_item_spawn(rarity='common', x=x, y=y, z=z)
            
 
         
